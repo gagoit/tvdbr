@@ -4,7 +4,9 @@ module Tvdbr
   class Client
     include HTTParty
     format :xml
-    base_uri "http://www.thetvdb.com/api/"
+
+    THETVDB_API_URL = "http://www.thetvdb.com/api/"
+    base_uri THETVDB_API_URL
     headers 'Accept-encoding' => 'gzip'
 
     attr_reader :api_key,
@@ -155,10 +157,10 @@ module Tvdbr
       # Returns the given xml as a hash appending the api_key to the url
       # tvdb.get_with_key("/some/url", :query => { :foo => "bar" })
       def get_with_key(*args)
-        args[0] = "/#{@api_key}/" + args[0]
+        url = "#{THETVDB_API_URL}#{@api_key}"  + args.shift
         begin
           Tvdbr::Retryable.retry(:on => MultiXml::ParseError) do
-            self.class.get(*args).parsed_response
+            self.class.get(url, *args).parsed_response
           end
         rescue Tvdbr::RetryableError => e
           { 'Data' => nil }
